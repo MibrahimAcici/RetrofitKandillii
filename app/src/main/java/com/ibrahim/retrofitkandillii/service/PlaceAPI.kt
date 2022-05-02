@@ -1,15 +1,17 @@
 package com.ibrahim.retrofitkandilli.service
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-class PlaceAPI {
+import com.ibrahim.retrofitkandillii.model.PlaceResponse
+import com.ibrahim.retrofitkandillii.util.PlaceContants
+import io.reactivex.Single
+import retrofit2.http.GET
+import retrofit2.http.Query
 
-    private val BASE_URL = "https://api.orhanaydogdu.com.tr/deprem/"
-
-    private val placeApi: PlaceService = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(PlaceService::class.java)
-
-    fun getPlaceService() = placeApi
+interface PlaceAPI {
+    companion object {
+        const val PLACES = "deprem/index.php"
+    }
+    @GET(PLACES)
+    fun getPlaces(
+        @Query("date") language: String = PlaceContants.DATE,
+        @Query("limit") limit: String = PlaceContants.LIMIT
+    ): Single<PlaceResponse>
 }

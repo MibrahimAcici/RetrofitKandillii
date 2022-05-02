@@ -2,60 +2,43 @@ package com.ibrahim.retrofitkandillii
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.ibrahim.retrofitkandilli.service.PlaceAPI
 import com.ibrahim.retrofitkandillii.adapter.PlaceAdapter
 import com.ibrahim.retrofitkandillii.databinding.ActivityMainBinding
-import com.ibrahim.retrofitkandillii.model.PlacesResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.ibrahim.retrofitkandillii.model.PlaceResponse
+import com.ibrahim.retrofitkandillii.viewmodel.PlaceViewModel
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
-    lateinit var binding: ActivityMainBinding //Viewbinding
-    lateinit var placeAdapter: PlaceAdapter  //Adapter tanımlama
+    private val placeAdapter = PlaceAdapter()
+    private lateinit var binding: ActivityMainBinding
+    private var placeList: ArrayList<PlaceResponse.Result> = arrayListOf()
+    private lateinit var placeViewModel: PlaceViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= ActivityMainBinding.inflate(layoutInflater) //Viewbinding
-        setContentView(binding.root) //Viewbinding
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        initAdapter()
-        fetchPlace()
+        placeViewModel = ViewModelProvider(this).get(PlaceViewModel::class.java)
+
+        placeViewModel.placeList()
+        observableLiveData()
+
+        recyclerView.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.VERTICAL, false)
+        recyclerView.adapter = placeAdapter
     }
+    private fun observableLiveData(){
+        placeViewModel.placeListLiveData.observe(this) {
+            it.result.forEach {res ->
+                placeList.add(res)
+            }
+            placeAdapter.setPlaceNameList(placeList)
+            progress.isVisible=false
 
-    private fun initAdapter() {
-        //Adapter Tanımlayıp başlatma
-        placeAdapter = PlaceAdapter()
-        binding.recyclerView.adapter = placeAdapter
-
-        //Adapterin Ekrandaki Görünümü
-        val layoutManager = LinearLayoutManager(applicationContext)
-        binding.recyclerView.layoutManager = layoutManager
-    }
-
-    private fun fetchPlace() {
-        binding.recyclerView.isVisible = false
-        binding.progress.isVisible = true
-        //Servise istek atma
-
-        val request=PlaceAPI().getPlaceService().getPlaces("2020-01-01",100)
-        request.enqueue(object : Callback<PlacesResponse> {
-        override fun onResponse(
-            call: Call<PlacesResponse>,
-            response: Response<PlacesResponse>
-        ) {
-
-            placeAdapter.setList(response.body()?.result ?: emptyList())
-            binding.recyclerView.isVisible = true
-            binding.progress.isVisible = false
         }
 
-            override fun onFailure(call: Call<PlacesResponse>, t: Throwable) {
-                Toast.makeText(applicationContext,t.message.toString(), Toast.LENGTH_LONG).show()
-                binding.recyclerView.isVisible = true
-                binding.progress.isVisible = false
-            }
-        })
-    }}
+    }
+}

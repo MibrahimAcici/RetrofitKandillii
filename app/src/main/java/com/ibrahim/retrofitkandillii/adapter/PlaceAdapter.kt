@@ -1,37 +1,44 @@
 package com.ibrahim.retrofitkandillii.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.ibrahim.retrofitkandillii.databinding.ItemPlaceBinding
-import com.ibrahim.retrofitkandillii.model.PlaceItem
+import com.ibrahim.retrofitkandillii.R
+import com.ibrahim.retrofitkandillii.model.PlaceResponse
+import kotlinx.android.synthetic.main.item_place.view.*
 
-class PlaceAdapter() : RecyclerView.Adapter<PlaceAdapter.PlaceVH>() {
+class PlaceAdapter : RecyclerView.Adapter<PlaceAdapter.PlaceVH>() {
 
-    private var placeList: ArrayList<PlaceItem?> = arrayListOf()
+    private var PlaceDataList: ArrayList<PlaceResponse.Result> = arrayListOf()
 
-    fun setList(newList: List<PlaceItem?>) {
-        this.placeList.clear()
-        this.placeList.addAll(newList)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = PlaceVH(
+        LayoutInflater.from(parent.context).inflate(R.layout.item_place, parent, false)
+    )
+
+    override fun onBindViewHolder(holder: PlaceAdapter.PlaceVH, position: Int) {
+        holder.bind(PlaceDataList[position])
+    }
+
+    override fun getItemCount(): Int = PlaceDataList.size
+
+    inner class PlaceVH(view: View) : RecyclerView.ViewHolder(view){
+        fun bind(s: PlaceResponse.Result) {
+            itemView.tv_place_location.text = s.lokasyon
+            itemView.tv_place_date.text=s.dateStamp
+            itemView.tv_place_coordinates.text=s.coordinates.toString()
+            itemView.tv_place_mag.text = s.mag.toString()
+        }
+    }
+
+    fun setPlaceNameList(listPlace: ArrayList<PlaceResponse.Result>){
+        PlaceDataList.clear()
+        PlaceDataList.addAll(listPlace)
         notifyDataSetChanged()
     }
 
-    inner class PlaceVH(val binding: ItemPlaceBinding) : RecyclerView.ViewHolder(binding.root) {
+    fun clear(){
+        PlaceDataList.clear()
+        notifyDataSetChanged()
     }
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaceVH {
-        return PlaceVH(ItemPlaceBinding.inflate(LayoutInflater.from(parent.context),parent,false))
-    }
-
-    override fun onBindViewHolder(holder: PlaceVH, position: Int) {
-        val place=placeList[position]
-
-        holder.binding.tvPlaceLocation.text=place?.lokasyon
-        holder.binding.tvPlaceDate.text=place?.date
-        holder.binding.tvPlaceCoordinates.text = place?.coordinates.toString()
-        holder.binding.tvPlaceMag.text = place?.mag.toString()
-
-    }
-
-    override fun getItemCount(): Int = placeList.size
-
 }
